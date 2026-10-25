@@ -8,6 +8,7 @@ on:
       - 'research/attitude/cassiope_orbit.py'
       - 'research/attitude/cassiope_attitude.py'
       - 'research/tests/test_cassiope_sp3.py'
+      - 'research/validation/independent_receiver.py'
       - 'src/main/kotlin/org/satpol/RealTransmitter.kt'
       - 'src/main/kotlin/org/satpol/orbit/RealTransmitterCli.kt'
       - 'build.gradle.kts'
@@ -41,6 +42,21 @@ jobs:
           gradle --no-daemon -q realTransmitter -PorbitFile=cassiope-orbit.json -PaemFile=real-cassiope.aem | tee joined-satellite-rf.txt
           grep -q 'CWCCW=UNKNOWN' joined-satellite-rf.txt
           grep -q 'angle=UNKNOWN' joined-satellite-rf.txt
+      - name: Independently emulate complex-IQ polarization measurements
+        run: |
+          python research/validation/independent_receiver.py \
+            cassiope-orbit.json real-cassiope.aem joined-satellite-rf.txt \
+            independent-polarization-receiver.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('independent-polarization-receiver.json').read_text())
+          assert r['geometry_independent_difference_deg']<1e-8
+          assert r['linear_noisy_receiver_p95_abs_error_deg']<1.0
+          assert r['rhcp_false_optimum_rate']<=0.05
+          assert not r['actual_rf_transmitter_wave_observed']
+          print('Independent simulated antenna receiver: PASS')
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: cassiope-definitive-orbit-attitude-real-rhcp
@@ -49,3 +65,4 @@ jobs:
             real-cassiope.aem
             real-attitude-report.json
             joined-satellite-rf.txt
+            independent-polarization-receiver.json
