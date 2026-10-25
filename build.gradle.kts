@@ -24,3 +24,12 @@ tasks.register<JavaExec>("igrfVector") {
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("org.satpol.IgrfReferenceCli")
 }
+
+tasks.register<JavaExec>("realAttitude") {
+    group = "verification"
+    description = "Verify source-tagged CASSIOPE attitude AEM with the Kotlin engine"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("org.satpol.orbit.RealAttitudeCli")
+    args(project.findProperty("attitudeFile") ?: "real-cassiope.aem",
+         project.findProperty("attitudeTime") ?: "2017-06-24T22:32:14Z")
+}

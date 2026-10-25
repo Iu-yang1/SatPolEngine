@@ -1,0 +1,54 @@
+name: Actual CASSIOPE attitude CDF verification
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cassiope-attitude.yml'
+      - 'research/attitude/cassiope_attitude.py'
+      - 'src/main/kotlin/org/satpol/CcsdsAttitude.kt'
+      - 'src/main/kotlin/org/satpol/orbit/RealAttitudeCli.kt'
+      - 'build.gradle.kts'
+permissions:
+  contents: read
+jobs:
+  real-attitude:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install numpy cdflib
+      - run: python research/attitude/cassiope_attitude.py "$RUNNER_TEMP/CASSIOPE-20170624.zip" real-cassiope.aem real-attitude-report.json
+      - name: Verify REAL quaternion direction in Kotlin and Python
+        run: |
+          gradle --no-daemon -q realAttitude -PattitudeFile=real-cassiope.aem -PattitudeTime=2017-06-24T22:32:14Z | tee real-attitude-vector.txt
+          python - <<'PY'
+          from pathlib import Path
+          import json,math,re
+          x=json.loads(Path('real-attitude-report.json').read_text())
+          assert x['valid_samples']>=2
+          assert x['sensor_provenance_min']>=2
+          assert x['absolute_satellite_pol_prediction_validated'] is False
+          m=re.search(r'REAL_ATTITUDE_VECTOR=([^\n]+)',Path('real-attitude-vector.txt').read_text())
+          assert m, 'Kotlin did not parse REAL source AEM'
+          v=list(map(float,m.group(1).split(',')))
+          assert abs(math.sqrt(sum(i*i for i in v))-1)<1e-10
+          print('REAL CASSIOPE attitude vector norm validated:',v)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cassiope-real-attitude-20170624
+          path: |
+            real-cassiope.aem
+            real-attitude-report.json
+            real-attitude-vector.txt
