@@ -27,6 +27,11 @@ jobs:
           head -n 8 "$MODEL_DIR"/igrf2025.dat
           echo 'Official iritest recommended JF switch defaults:'
           grep -niE 'jf\(|JF\(' "$MODEL_DIR"/iritest.for | head -55 || true
+          echo 'Official IRI TCON, READ_IG_RZ metadata:'
+          grep -ni -A 90 -B 5 -E '^ *SUBROUTINE TCON|^ *SUBROUTINE READ_IG_RZ' "$MODEL_DIR/irifun.for" | head -195 || true
+          echo 'IRI index input status:'
+          sed -n '1,5p' "$MODEL_DIR/ig_rz.dat"
+          ls -lh "$MODEL_DIR"/IG_RZ.DAT "$MODEL_DIR"/ig_rz.dat
           echo 'IGRF error branch source:'
           grep -ni -B 14 -A 12 'Error while reading' "$MODEL_DIR"/*.for | head -160 || true
           (cd "$MODEL_DIR" && printf '2026 10 20 12.0 0.0 0.0 250.0\n' | ./iri2026-density) | tee /tmp/iri_density_stdout
