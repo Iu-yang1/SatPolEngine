@@ -20,19 +20,22 @@ class CcsdsAttitude private constructor(
     private val validFrom:Instant,
     private val validUntil:Instant
 ): AttitudeAxisModel {
-    var antennaAxisBody:Vector3?=null
-        private set
+    private var antennaAxisBody:Vector3?=null
+    private var antennaAxisProvenance:String?=null
 
-    fun withCalibratedAntennaAxis(axis:Vector3):CcsdsAttitude {
+    fun withCalibratedAntennaAxis(axis:Vector3, axisEvidence:String):CcsdsAttitude {
         require(axis.isFinite()&&axis.norm()>1e-10)
+        require(axisEvidence.isNotBlank()) { "Satellite antenna mechanical axis source required" }
         antennaAxisBody=axis.unit()
+        antennaAxisProvenance=axisEvidence
         return this
     }
 
     override fun axisEcef(state:OrbitStateEcef,time:Instant):AttitudeAxisEcef? {
         val axis=antennaAxisBody?:return null
         val q=quaternionAt(time)?:return null
-        return AttitudeAxisEcef(q.rotate(axis).unit(),AttitudeEvidence.OBSERVED,source)
+        return AttitudeAxisEcef(q.rotate(axis).unit(),AttitudeEvidence.OBSERVED,
+            "$source; antenna mounting: ${antennaAxisProvenance ?: error(\"Missing axis evidence\")}")
     }
 
     fun quaternionAt(time:Instant):Quaternion? {

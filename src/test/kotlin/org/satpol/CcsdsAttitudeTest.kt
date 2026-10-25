@@ -29,7 +29,7 @@ DATA_STOP
         Vector3(0.0,7500.0,0.0))
     @Test fun slerpHalfTurnAndObserveAxis() {
         val attitude=CcsdsAttitude.parseAemKvn(fixture,"SYNTHETIC AEM TEST")
-            .withCalibratedAntennaAxis(Vector3(1.0,0.0,0.0))
+            .withCalibratedAntennaAxis(Vector3(1.0,0.0,0.0),"synthetic RF axis fixture")
         val vec=assertNotNull(attitude.axisEcef(state,Instant.parse("2026-10-25T00:00:05Z")))
         assertEquals(AttitudeEvidence.OBSERVED,vec.evidence)
         assertEquals(0.0,vec.directionEcef.x,1e-12)
