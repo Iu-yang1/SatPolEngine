@@ -18,6 +18,16 @@ angle and suggested CW/CCW direction**; research diagnostics belong here.
 - **IERS EOP CSV** loader with linear interpolation, source labels, staleness
   rejection and leap-second discontinuity guard (the official EOP file
   download/parser is not yet integrated).
+- **Official IRI-2026** source compilation and actual Fortran-derived path electron
+  density, F2 peak metadata and dated F10.7 from official daily indices.
+  Independent PyIRI remains an optional research baseline.
+- **NOAA GloTEC 2D F2 observations**: archived NetCDF read, time and quality
+  checks, limited peak-density correction of official IRI profiles, plus
+  source-specific diagnostics. This is not full 3D ionospheric tomography.
+- **Real CASSIOPE/Swarm-E attitude**: independently checked BODY->ITRF
+  quaternion time series and strict CCSDS AEM A2B converter/reader.
+- **Calibrated receiver POL only**: receiver-axis zero/sign and mechanical
+  limits must be supplied before reporting CW/CCW or motor targets.
 - **IRI-family electronic density** research export: actual PyIRI
   climatological model evaluation on finite satellite-to-ground sample points,
   using externally supplied, dated F10.7; exact-path Kotlin import.
@@ -28,19 +38,21 @@ angle and suggested CW/CCW direction**; research diagnostics belong here.
 
 ## Not yet implemented / restrictions
 
-- The *official Fortran IRI-2026* library and its updated indices are **not
-  bundled**. PyIRI is a separately versioned IRI-family implementation; its
-  profiles are climatological, not direct electron-density measurements.
-- GloTEC / IGS live TEC assimilation and a complete real-time IERS EOP
-  downloader/validator are not implemented. No accurate operational ionosphere
+- The official IRI-2026 Fortran model is downloaded and compiled in CI, not
+  redistributed; the daily indices and reference coefficients must be updated
+  for operational use. It is a model, not a direct path-resolved density measurement.
+- GloTEC archived F2 correction is implemented and tested, but full 3D TEC
+  assimilation, independent GNSS validation, live IGS ingest and a complete
+  real-time IERS EOP downloader/validator are not implemented. No accurate operational ionosphere
   prediction should be inferred without fully specified sources and timestamps.
-- Dynamic real satellite quaternion telemetry and antenna vector patterns,
-  calibration of propagation/polarization sign and real polarimetric hardware
-  verification are outstanding; tests are primarily synthetic plus official
-  Gauss coefficient inputs.
+- Real CASSIOPE attitude data have been verified, but documented transmitter
+  antenna field vectors, calibrated Faraday sign and real RF polarization
+  comparison for FO-29, SO-50, RS-44 and ISS remain outstanding.
+  Correct spacecraft quaternion math alone does **not** validate downlink POL.
 - No Look4Sat Android UI modification has been made.
-- Hardware third-axis CW/CCW requires the *actual* calibrated POL position and
-  direction mapping; AZ/EL rotator feedback is not POL feedback.
+- Hardware third-axis CW/CCW requires explicit measured zero, sign, current
+  POL angle and limits; AZ/EL rotator feedback is not POL feedback.
+  A theoretical sky polarization angle alone gives direction UNKNOWN.
 
 ## Quick checks
 
@@ -76,6 +88,7 @@ Key classes:
 
 ## Technical notes
 
+- [2026-10-25 independent validation and remaining scientific gaps](docs/validation-2026-10-25.md)
 - [Data sources, IGRF, IRI and orbit input](docs/data-sources.md)
 - [Physical equations and validity](docs/physics.md)
 - [Satellite attitude evidence](docs/satellite-evidence.md)

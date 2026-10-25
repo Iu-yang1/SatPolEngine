@@ -20,8 +20,11 @@ The future orbit bridge should:
 4. resolve a **real** satellite attitude (or an explicitly ASSUMED model),
 5. calculate an ideal-dipole vector or full emitted Jones response,
 6. provide an actual ionospheric Faraday estimate with model provenance,
-7. pass the current POL third-axis angle and hard mechanical limits to the solver,
+7. require a separately measured POL motor zero and CW/CCW sign calibration,
+   as well as actual third-axis encoder angle and mechanical limits,
 8. render only `targetAngleDeg` and `recommendedRotation` in the radar UI.
+   If calibration or attitude is not available, display UNKNOWN instead of
+   inventing a motor direction.
 
 **AZ/EL feedback is not POL feedback.** If current POL is not measured or
 manually supplied, a target angle can exist but rotation direction is UNKNOWN.
@@ -36,5 +39,8 @@ velocities in metres per second, frequency in Hz, rotation in degrees.
 This milestone includes a port of the eight GPL-licensed Look4Sat orbit files,
 a TEME position/velocity state method, explicit-EOP Vallado conversion, and
 IGRF-14 field evaluation. Optional PyIRI density export accepts dated F10.7.
-**Not completed:** live IRI-2026 Fortran model packaging, real EOP ingestion,
-real satellite attitude telemetry, real-time TEC assimilation, or Android UI.
+**Validated on archived data:** official IRI-2026 Fortran execution and NOAA
+GloTEC F2-limited correction, and CASSIOPE 1-Hz real spacecraft quaternions.
+**Not completed:** live EOP ingestion, full 3D TEC/GNSS assimilation,
+operational transmitting antenna polarization evidence, independently measured
+actual RF polarization angle, or Android UI.

@@ -62,5 +62,8 @@ A 2-D TEC map cannot uniquely invert a 3-D electron-density profile.
 - P3: Controlled geomagnetic storm and low-elevation sensitivity experiments,
   showing the change in Faraday phase and uncertainty at 145 and 435 MHz.
 
-No real-time TEC assimilation code is claimed in the current implementation.
-This document records scientifically required contracts before adding it.
+Archival NOAA GloTEC F2 model correction is now implemented and tested
+along a synthetic ground-to-LEO ray. It uses actual timestamped observed-
+assimilated GloTEC F2 NmF2/hmF2 maps but **not** direct user-receiver
+measurements, 3D tomography, real-time IGS ingest, uncertainty covariance,
+or independent RF POL validation. See `validation-2026-10-25.md` for results.

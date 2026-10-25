@@ -66,11 +66,31 @@ calling application and contains a nonempty source label.
 - https://www.iers.org/IERS/EN/DataProducts/EarthOrientationData/eop.html
 
 `EarthOrientation.zeroApproximation()` is **only** for approximate numerical
-tests or non-precision fallback; it is not an accurate EOP dataset. Accurate
-real-time EOP ingestion and SGP4 cross-validation against Vallado baseline
-ephemerides are still outstanding.
+tests or non-precision fallback; it is not an accurate EOP dataset. Accurate real-time EOP ingestion remains outstanding. An initial independent
+Vallado SGP4 cross-check on three ISS epochs is available in GitHub Actions;
+expand to multiple near-earth and deep-space reference trajectories.
 
-## GloTEC and IGS: planned observational corrections
+## Official IRI-2026 and archival GloTEC: verified experimental implementation
+
+The original IRI-2026 Fortran is now downloaded, compiled and run in a
+reproducible GitHub Actions workflow. The driver initializes `read_ig_rz`
+before `iri_sub`, applies official `iritest.for` default switches, and
+provides exact model-index filenames on case-sensitive Linux filesystems.
+`export_official_path.py` exports finite ray electron densities, the F2
+peak NmF2/hmF2 and the daily F10.7 actually used by IRI.
+
+A separate NOAA archived GloTEC NetCDF workflow loads timestamped 2D fields
+TEC, NmF2, hmF2 and quality_flag. The limited observation update modifies
+electron density with an altitude-localized factor derived from NmF2 ratio.
+This is NOT a full TEC-constrained inversion, nor does it actually shift the
+F2 peak height. Full-column TEC is diagnostic and never substituted for
+truncated ground-to-LEO slant TEC.
+
+The signed Faraday integral computes IRI vs GloTEC corrected results at 145
+and 435 MHz on an explicitly synthetic receiver-satellite ray with real
+historical model and observation epochs. See validation report.
+
+## GloTEC and IGS: planned further observational corrections
 
 - NOAA SWPC GloTEC: https://www.spaceweather.gov/products/glotec
 - IGS global ionosphere TEC products: https://igs.org/products/
