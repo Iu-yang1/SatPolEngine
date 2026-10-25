@@ -130,6 +130,7 @@ enum class AmateurPolarizationStatus {
     NOMINAL_CIRCULAR_NO_UNIQUE_ROLL,
     LOW_FREQUENCY_OUTSIDE_APPROXIMATION,
     FARADAY_ONLY_ATTITUDE_UNKNOWN,
+    ABSOLUTE_ANGLE_UNAVAILABLE,
     ANGLE_CONDITIONAL_ON_ASSUMPTIONS,
     ANGLE_MODELLED_NOT_RF_VALIDATED
 }
@@ -269,7 +270,9 @@ object AmateurPolarizationService {
         }
 
         return partial(
-            p, AmateurPolarizationStatus.FARADAY_ONLY_ATTITUDE_UNKNOWN,
+            p, if (faraday != null)
+                AmateurPolarizationStatus.FARADAY_ONLY_ATTITUDE_UNKNOWN
+            else AmateurPolarizationStatus.ABSOLUTE_ANGLE_UNAVAILABLE,
             faraday, axis?.evidence ?: AttitudeEvidence.UNKNOWN,
             "Faraday is a propagation component, NOT an absolute target angle. "
                 + "Attitude, body-mounted RF Jones vector, or ionosphere is "

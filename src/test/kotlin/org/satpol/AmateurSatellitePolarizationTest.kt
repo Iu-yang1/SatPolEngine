@@ -78,7 +78,9 @@ class AmateurSatellitePolarizationTest {
         val x=request(44909,435.640e6)
         val out=AmateurPolarizationService.predict(x)
         assertEquals(DownlinkWaveClass.UNVERIFIED,out.profile?.waveClass)
+        assertEquals(AmateurPolarizationStatus.ABSOLUTE_ANGLE_UNAVAILABLE,out.status)
         assertNull(out.targetAngleDeg)
+        assertNull(out.faradayAngleDeg)
         assertEquals(RotationDirection.UNKNOWN,out.direction)
     }
 
