@@ -29,6 +29,17 @@ program iri_density_driver
      ! undefined Fortran logical contents. Profile switches are validated
      ! during the end-to-end smoke test against physical density range.
      jf=.true.
+     ! Exact default switches documented in official IRI-2026 iritest.for.
+     jf(4)=.false.
+     jf(5)=.false.
+     jf(6)=.false.
+     jf(23)=.false.
+     jf(30)=.false.
+     jf(33)=.false.
+     jf(35)=.false.
+     jf(39)=.false.
+     jf(40)=.false.
+     jf(47)=.false.
      outf=0.0
      oarr=0.0
      ! IRI: jmag=0 geographical, UT indicated by dhour=25 + UTC hour.
