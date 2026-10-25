@@ -24,6 +24,17 @@ class RealTransmitterTest {
             assertEquals(0.5,circular.linearMatch(deg.toDouble()),1e-12)
         }
     }
+    @Test fun nearCircularFieldMustNotSuggestMotorRotation() {
+        val weaklyElliptical=Jones(Complex64(1.0),Complex64(0.0,0.99))
+        val result=PolarizationEngine.solveJones(weaklyElliptical,
+            AttitudeEvidence.OBSERVED,
+            FaradayEstimate(0.0,0.0,"test vacuum",1),0.0,
+            rollCalibration=RollCalibration(0.0,true,"calibrated fixture"))
+        assertEquals(PredictionStatus.AXIS_UNDEFINED,result.status)
+        assertNull(result.targetAngleDeg)
+        assertEquals(RotationDirection.UNKNOWN,result.recommendedRotation)
+    }
+
     @Test fun timeMismatchCannotMasqueradeAsRealAttitudeAlignedWithOrbit() {
         val t2=t.plusSeconds(1)
         assertFailsWith<IllegalArgumentException>{

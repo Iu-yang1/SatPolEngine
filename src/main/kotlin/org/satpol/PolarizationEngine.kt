@@ -76,6 +76,13 @@ object PolarizationEngine {
             PredictionStatus.PROPAGATION_UNKNOWN,attitudeEvidence,null,geometricAngle
         )
         val received = emitted.rotated(faraday.angleRad)
+        // A near-circular ellipse technically has a noisy major axis, but a
+        // linear receiver gains almost nothing by chasing that orientation.
+        // Stop angle recommendations when linear Stokes modulation <8%.
+        val stokes=received.stokes()
+        val linearModulation=if(stokes.s0>1e-24) hypot(stokes.s1,stokes.s2)/stokes.s0 else 0.0
+        if(!linearModulation.isFinite() || linearModulation < 0.08)
+            return unavailable(PredictionStatus.AXIS_UNDEFINED,attitudeEvidence,faraday,geometricAngle)
         val axis = received.majorAxisDeg()
             ?: return unavailable(PredictionStatus.AXIS_UNDEFINED,attitudeEvidence,faraday,geometricAngle)
         val instruction=if(rollCalibration!=null) {
