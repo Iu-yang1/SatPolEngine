@@ -7,6 +7,23 @@ engine, with a future **minimal presentation-only bridge** to
 The final Look4Sat tracker should display **only optimal receive polarization
 angle and suggested CW/CCW direction**; research diagnostics belong here.
 
+## Amateur satellite support without new TLM
+
+An evidence-gated `AmateurPolarizationService` now supports **AO-7
+Mode A/B, FO-29, SO-50, RS-44 and AO-73** by NORAD ID and documented
+downlink frequency. It can identify nominal circular signals whose ideal
+linear-feed roll optimum is undefined, and compute a separate ionospheric
+Faraday term for supported VHF/UHF line-like or unverified downlinks.
+
+**This is not yet an absolute SO-50/RS-44/AO-73 POL angle prediction.**
+Satellite attitude and calibrated transmitter Jones patterns must not be
+fabricated from a TLE or the term "linear transponder." A conditional
+ideal-dipole solution is allowed only when an externally established
+antenna axis and attitude model are explicitly provided, and unknown
+or assumed spacecraft data never silently authorize motor movement.
+
+[Source profiles, status contract and future TLM integration](docs/amateur-satellite-support.md).
+
 ## Real spacecraft RF profile and independent receiver validation
 
 CASSIOPE / Swarm-E has a **documented 2231.5 MHz RHCP S-band downlink**
