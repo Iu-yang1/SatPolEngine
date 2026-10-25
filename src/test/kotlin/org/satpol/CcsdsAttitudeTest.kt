@@ -55,7 +55,7 @@ DATA_STOP
 
     @Test fun rejectStaleInterpolatingGap() {
         val data=CcsdsAttitude.parseAemKvn(fixture,"SYNTHETIC AEM TEST",maximumGapSeconds=2.0)
-            .withCalibratedAntennaAxis(Vector3(1.0,0.0,0.0))
+            .withCalibratedAntennaAxis(Vector3(1.0,0.0,0.0),"synthetic RF axis fixture")
         assertNull(data.axisEcef(state,Instant.parse("2026-10-25T00:00:05Z")))
     }
 }
