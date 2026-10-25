@@ -5,7 +5,7 @@ import sys
 import unittest
 import numpy as np
 import xarray as xr
-sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]/"observations"))
+sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]))
 from fuse_iri_glotec import correction_ratio, interpolate_field, require_model_snapshot
 
 def fixture():
