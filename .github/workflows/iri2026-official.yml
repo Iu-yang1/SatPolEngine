@@ -21,7 +21,7 @@ jobs:
       - name: Retrieve, compile and test official 2026 Fortran source
         run: |
           bash research/iri2026/build_official.sh "$RUNNER_TEMP/iri2026"
-          printf '2026 10 20 12.0 0.0 0.0 250.0\n' | "$RUNNER_TEMP/iri2026/iri2026-density" | tee /tmp/iri_density_stdout
+          printf '2026 10 20 12.0 0.0 0.0 250.0\n' | "$(cat "$RUNNER_TEMP/iri2026/executable.path")" | tee /tmp/iri_density_stdout
           grep -E '[0-9]' /tmp/iri_density_stdout
       - name: Export real model densities along a finite research ray
         run: |

@@ -46,8 +46,15 @@ test "$(stat -c %s iri.zip)" -gt 1000000
 test "$(stat -c %s apf107.dat)" -gt 100000
 test "$(stat -c %s ig_rz.dat)" -gt 500
 unzip -q -o iri.zip
-# Original README specifies this exact source-file compilation sequence.
-gfortran -O2 -std=legacy -ffixed-line-length-none -o iri2026-density \
+MODEL_SUBDIR="$(find "$OUTPUT" -type f -iname irisub.for -print -quit)"
+if [[ -z "$MODEL_SUBDIR" ]]; then echo "Model archive missing irisub.for" >&2; exit 3; fi
+MODEL_SUBDIR="$(dirname "$MODEL_SUBDIR")"
+cp "$OUTPUT/apf107.dat" "$MODEL_SUBDIR/apf107.dat"
+cp "$OUTPUT/ig_rz.dat" "$MODEL_SUBDIR/ig_rz.dat"
+cd "$MODEL_SUBDIR"
+# Compile from the original extracted model directory, including data files.
+gfortran -O2 -std=legacy -ffixed-line-length-none -fallow-argument-mismatch -o iri2026-density \
   "$HERE/iri_density_driver.f90" irisub.for irifun.for iritec.for \
   iridreg.for igrf.for cira.for iriflip.for rocdrift.for
-echo "Official IRI-2026 ready: $OUTPUT/iri2026-density"
+printf '%s\n' "$MODEL_SUBDIR/iri2026-density" > "$OUTPUT/executable.path"
+echo "Official IRI-2026 ready: $MODEL_SUBDIR/iri2026-density"
