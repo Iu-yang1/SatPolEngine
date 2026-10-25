@@ -43,6 +43,14 @@ jobs:
           assert m, 'Kotlin did not parse REAL source AEM'
           v=list(map(float,m.group(1).split(',')))
           assert abs(math.sqrt(sum(i*i for i in v))-1)<1e-10
+          samples=[line for line in Path('real-cassiope.aem').read_text().splitlines()
+                   if line.startswith('2017-06-24T22:32:14.')]
+          assert len(samples)==1, 'Selected real attitude instant missing'
+          qx,qy,qz,qw=map(float,samples[0].split()[1:])
+          ref=[1-2*(qy*qy+qz*qz),2*(qx*qy+qz*qw),2*(qx*qz-qy*qw)]
+          err=math.dist(v,ref)
+          print('REAL CASSIOPE attitude ECEF quaternion independent vector error:',err)
+          assert err<1e-9, f'Kotlin vs Python real attitude mismatch: {err}'
           print('REAL CASSIOPE attitude vector norm validated:',v)
           PY
       - uses: actions/upload-artifact@v4
