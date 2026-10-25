@@ -10,6 +10,10 @@ program iri_density_driver
   real :: outf(20,1000), oarr(100)
   character(len=512) :: line
 
+  ! IRI_SUB expects /igrz/ COMMON populated by the outer IRITEST program.
+  ! In a reusable headless driver we must perform that initialization ourselves.
+  call read_ig_rz
+
   do
      read(*,'(A)',iostat=ios) line
      if (ios/=0) exit
