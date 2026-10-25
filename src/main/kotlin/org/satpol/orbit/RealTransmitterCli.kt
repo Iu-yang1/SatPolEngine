@@ -12,16 +12,22 @@ import kotlin.math.*
  * not a recorded ground reception. Circular polarization yields no POL optimum.
  */
 object RealTransmitterCli {
-    fun extract(s:String,key:String):String {
-        val expr=Regex("\\\""+key+"\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"")
-        return expr.find(s)?.groupValues?.get(1)?:error("Missing '$key' from SP3 JSON")
-    }
-    fun vec(s:String,key:String):Vector3 {
-        val x=Regex("\\\""+key+"\\\"\\s*:\\s*\\[([^\\]]+)]").find(s)?.groupValues?.get(1)
+    private fun valueLine(s:String,key:String):String =
+        s.lineSequence().map { it.trim() }
+            .firstOrNull { it.startsWith("\"$key\"") }
+            ?.substringAfter(':')?.trim()?.trimEnd(',')
             ?:error("Missing '$key' from SP3 JSON")
-        val a=x.split(',').map(String::trim).map(String::toDouble)
-        require(a.size==3)
-        return Vector3(a[0],a[1],a[2])
+
+    fun extract(s:String,key:String):String =
+        valueLine(s,key).removeSurrounding("\"")
+
+    fun vec(s:String,key:String):Vector3 {
+        val row=valueLine(s,key)
+        require(row.startsWith("[") && row.endsWith("]"))
+        val values=row.substring(1,row.length-1).split(',')
+            .map(String::trim).map(String::toDouble)
+        require(values.size==3)
+        return Vector3(values[0],values[1],values[2])
     }
     @JvmStatic fun main(args:Array<String>){
         require(args.size==2){"Usage realTransmitter realOrbit.json realAttitude.aem"}
