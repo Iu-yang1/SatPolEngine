@@ -14,6 +14,7 @@ OBJECT_ID = 2026-001A
 CENTER_NAME = EARTH
 REF_FRAME_A = SC_BODY
 REF_FRAME_B = ITRF
+ATTITUDE_DIR = A2B
 TIME_SYSTEM = UTC
 START_TIME = 2026-10-25T00:00:00Z
 STOP_TIME = 2026-10-25T00:00:10Z
@@ -44,6 +45,14 @@ DATA_STOP
                 "SYNTHETIC AEM TEST")
         }
     }
+    @Test fun rejectReverseQuaternionDirection() {
+        assertFailsWith<IllegalArgumentException>{
+            CcsdsAttitude.parseAemKvn(
+                fixture.replace("ATTITUDE_DIR = A2B","ATTITUDE_DIR = B2A"),
+                "synthetic reverse frame",5.0)
+        }
+    }
+
     @Test fun rejectStaleInterpolatingGap() {
         val data=CcsdsAttitude.parseAemKvn(fixture,"SYNTHETIC AEM TEST",maximumGapSeconds=2.0)
             .withCalibratedAntennaAxis(Vector3(1.0,0.0,0.0))

@@ -97,6 +97,11 @@ class CcsdsAttitude private constructor(
             }
             require(segmentCount==1&&!inMeta&&!inData)
             require(meta["TIME_SYSTEM"]=="UTC")
+            // The component order and rotation direction are separate concepts.
+            // Refuse AEM B2A rather than silently using its inverse as body->ECEF.
+            require(meta["ATTITUDE_DIR"]=="A2B") {
+                "Only explicit SC_BODY -> ITRF (A2B) attitude is supported"
+            }
             require(meta["CENTER_NAME"]?.uppercase()=="EARTH")
             require(meta["REF_FRAME_A"]?.uppercase() in setOf("SC_BODY","SC_BODY_1"))
             require(meta["REF_FRAME_B"]?.uppercase() in setOf("ITRF","ITRF93","ECEF"))
@@ -110,6 +115,9 @@ class CcsdsAttitude private constructor(
             val stop=Instant.parse(meta["USEABLE_STOP_TIME"]?:meta["STOP_TIME"]
                 ?:error("Missing stop time"))
             require(start<=stop)
+            require(data.all { it.first>=start && it.first<=stop }) {
+                "Attitude observations must lie inside advertised UTC span"
+            }
             return CcsdsAttitude(data,id,source,maximumGapSeconds,start,stop)
         }
 

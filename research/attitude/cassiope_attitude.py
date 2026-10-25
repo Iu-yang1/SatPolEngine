@@ -87,6 +87,7 @@ def export(archive:Path,out_aem:Path,out_report:Path):
         "CENTER_NAME = EARTH",
         "REF_FRAME_A = SC_BODY",
         "REF_FRAME_B = ITRF",
+        "ATTITUDE_DIR = A2B",
         "TIME_SYSTEM = UTC",
         f"START_TIME = {start}",
         f"STOP_TIME = {end}",
