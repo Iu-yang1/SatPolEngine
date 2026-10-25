@@ -65,7 +65,8 @@ object PolarizationEngine {
         attitudeEvidence: AttitudeEvidence,
         faraday: FaradayEstimate?,
         currentMechanicalRollDeg: Double? = null,
-        mechanicalLimits: RollLimits? = null
+        mechanicalLimits: RollLimits? = null,
+        rollCalibration: RollCalibration? = null
     ): PolarizationSolution {
         if (attitudeEvidence == AttitudeEvidence.UNKNOWN || emitted == null) {
             return unavailable(PredictionStatus.ATTITUDE_UNKNOWN,attitudeEvidence,faraday)

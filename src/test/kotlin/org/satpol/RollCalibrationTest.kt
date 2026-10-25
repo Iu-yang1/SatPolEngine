@@ -26,7 +26,7 @@ class RollCalibrationTest {
         assertEquals(-30.0,assertNotNull(target.commandAngleDeg),1e-12)
         assertEquals(-30.0,assertNotNull(target.rotationDeltaDeg),1e-12)
         assertEquals(RotationDirection.CLOCKWISE,target.recommendedRotation)
-        assertEquals(0.0,assertNotNull(target.theoreticalLossDb),1.2494) // loss for 30° mismatch
+        assertEquals(-10.0*log10(0.75),assertNotNull(target.theoreticalLossDb),1e-12)
     }
 
     @Test fun nonZeroMotorZeroAndEquivalentPolarizerAxes() {
