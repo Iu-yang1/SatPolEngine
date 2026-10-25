@@ -96,7 +96,7 @@ def fuse(request, glotec_file:Path, output:Path, min_quality=2):
     edp=np.asarray(edp)
     if edp.shape!=(1,len(heights),count):
         raise ValueError(f"Unexpected PyIRI shape: {edp.shape}")
-    background=np.asarray([np.interp(alt[k],heights,edp[0,:,k]) for k in range(count)])
+    background=np.asarray([np.interp(alt[k],heights,edp[0,:,k],left=0.0) for k in range(count)])
     bg_nm=np.asarray(f2["Nm"])[0,:]
     bg_hm=np.asarray(f2["hm"])[0,:]
     with xr.open_dataset(glotec_file,decode_cf=True) as ds:
@@ -115,7 +115,7 @@ def fuse(request, glotec_file:Path, output:Path, min_quality=2):
     for k in range(count):
         if not (math.isfinite(vtec[k]) and 0<vtec[k]<300):
             raise ValueError("Invalid GloTEC TEC observation")
-        vals.append(correction_ratio(background[k],bg_nm[k],bg_hm[k],nm[k],hm[k],alt[k]))
+        vals.append(0.0 if alt[k]<80.0 else correction_ratio(background[k],bg_nm[k],bg_hm[k],nm[k],hm[k],alt[k]))
     if not np.isfinite(vals).all():raise ValueError("Nonfinite fused densities")
     ver=getattr(PyIRI,"__version__","unknown")
     epoch=now.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -127,7 +127,7 @@ def fuse(request, glotec_file:Path, output:Path, min_quality=2):
             f.write("\t".join([*(f"{v:.9f}" for v in point),f"{ne:.10e}"])+"\n")
     return {"time_utc":epoch,"glotec_observation_utc":observed_epoch,
         "observation_age_minutes":gap,"samples":count,"quality_min":min(qualities),
-        "model":"PyIRI background + NOAA GloTEC peak NmF2 correction",
+        "model":"PyIRI background + NOAA GloTEC F2 peak density correction; explicit zero density below 80km",
         "observed_tec_tecu_min":min(vtec),"observed_tec_tecu_max":max(vtec),
         "note":"TEC shown for diagnosis only; not inverted into LEO slant path"}
 
