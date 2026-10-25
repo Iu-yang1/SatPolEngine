@@ -33,5 +33,8 @@ a motor from experimental model output without calibration and operator approval
 Units: WGS-84 ellipsoidal altitude in metres, Earth-fixed xyz in metres,
 velocities in metres per second, frequency in Hz, rotation in degrees.
 
-This first milestone **does not yet claim full TLE propagator extraction,
-IRI/IGRF integration or Look4Sat UI modifications**.
+This milestone includes a port of the eight GPL-licensed Look4Sat orbit files,
+a TEME position/velocity state method, explicit-EOP Vallado conversion, and
+IGRF-14 field evaluation. Optional PyIRI density export accepts dated F10.7.
+**Not completed:** live IRI-2026 Fortran model packaging, real EOP ingestion,
+real satellite attitude telemetry, real-time TEC assimilation, or Android UI.

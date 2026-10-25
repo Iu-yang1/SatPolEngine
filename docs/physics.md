@@ -46,10 +46,11 @@ The integrator operates only on the finite LEO-to-receiver ray and retains
 the **signed** magnetic projection, so it never silently equates GNSS full-column
 VTEC with a shorter LEO slant segment.
 
-The current engine exposes injection interfaces for electron density and
-magnetic field but does **not** yet bundle or falsely claim to have implemented
-IRI, IGRF, GloTEC or space-weather assimilation. Synthetic uniform providers
-appear **only** in tests. Atmospheric bending, ray splitting, scintillation,
+The engine now bundles official IGRF-14 2020/2025/SV coefficients and the
+spherical-harmonic field evaluator. An optional PyIRI path-density exporter
+can provide an actual IRI-family climatological profile, but it is **not**
+the official IRI-2026 Fortran implementation. Synthetic uniform electron
+densities appear **only** in physics tests. Atmospheric bending, ray splitting, scintillation,
 attitude uncertainty and antenna-vector patterns require further work.
 
 ## Data providers planned

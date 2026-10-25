@@ -1,0 +1,34 @@
+name: PyIRI model integration
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pyiri-sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PyIRI model (research only)
+        run: python -m pip install PyIRI numpy
+      - name: Run real PyIRI climatological model on a synthetic geometry
+        run: |
+          python research/iri_export_path.py research/iri-request.example.json pyiri-samples.tsv
+          python - <<'PY'
+          from pathlib import Path
+          path=Path('pyiri-samples.tsv')
+          lines=path.read_text().splitlines()
+          assert lines[0].startswith('# source=PyIRI-')
+          assert len(lines)==18, f'Expected 16 samples, got {len(lines)-2}'
+          density=[float(x.split('\t')[-1]) for x in lines[2:]]
+          assert all(x>=0 for x in density)
+          assert max(density)>1e7, f'Unphysical density values: {density}'
+          print('PyIRI model valid finite positive densities on path:',len(density))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pyiri-model-samples
+          path: pyiri-samples.tsv
