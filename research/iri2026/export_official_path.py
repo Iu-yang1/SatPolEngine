@@ -48,12 +48,12 @@ def export(request, binary, output):
     values=[]
     for line in completed.stdout.splitlines():
         line=line.strip()
-        if not line or line.startswith(("WARNING","NOTE")): continue
-        if line.startswith("ERROR:"):
-            raise RuntimeError("IRI model: "+line)
-        try: value=float(line.replace("D","E"))
+        if "Error while reading" in line or line.startswith("ERROR:"):
+            raise RuntimeError("Official IRI reported invalid model coefficients: "+line)
+        if not line.startswith("SATPOL_NE="): continue
+        try: value=float(line.split("=",1)[1].replace("D","E"))
         except ValueError:
-            raise RuntimeError("Unexpected official IRI output: "+line[:200])
+            raise RuntimeError("Unexpected official IRI density field: "+line[:200])
         if not math.isfinite(value) or value<0 or value>=1e14:
             raise RuntimeError("Invalid IRI density")
         values.append(value)

@@ -36,7 +36,7 @@ program iri_density_driver
      if(outf(1,1) <= 0.0.or.outf(1,1)>1.0e14) then
        write(*,'(A)') 'ERROR:INVALID_DENSITY'
      else
-       write(*,'(ES22.12)') outf(1,1)
+       write(*,'(A,ES22.12)') 'SATPOL_NE=',outf(1,1)
      endif
   enddo
 end program iri_density_driver
