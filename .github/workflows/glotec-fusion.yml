@@ -4,7 +4,7 @@ on:
     branches: [main]
     paths:
       - 'research/observations/fuse_iri_glotec.py'
-      - 'research/tests/test_glotec_fusion.py'
+      - 'research/observations/tests/test_glotec_fusion.py'
       - '.github/workflows/glotec-fusion.yml'
   workflow_dispatch:
 permissions:
