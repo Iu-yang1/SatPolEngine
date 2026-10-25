@@ -71,3 +71,20 @@ This is a quaternion coordinate test, not a CASSIOPE RF polarization angle.
   GloTEC assimilation beyond the local NmF2 correction and real orbit/position
   for the same epoch as spacecraft attitude.
 - No autonomous third-axis motor movement is authorized by this work.
+
+## Added: real transmitting satellite, common-epoch orbit and independent receiver
+
+See `docs/real-transmitter-validation.md`, including physical assumptions,
+historical precise-orbit provenance, same-UTC quaternion join, real S-band RHCP
+antenna data, synthetic counterfactual linear-emitter antenna, and 256-trial
+independent complex-IQ receiver Monte Carlo. A simulated receiver does **not**
+provide real-world downlink POL measurement accuracy; no real RF POL data
+have been checked and no actual transmission is established for the epoch.
+
+- CI: https://github.com/Iu-yang1/SatPolEngine/actions/runs/40165856890
+- CASSIOPE GPS-time SP3 sample: 2017-06-24T22:32:32 GPS.
+- CASSIOPE AttQuat CDF sample: 2017-06-24T22:32:14 UTC.
+- RHCP downlink 2231.5MHz: no unique linear-roll target, ideal loss 3.0103dB.
+- Synthetic +X ideal linearly polarized transmitter angle: 22.746802°.
+- Independent noisy receiver p95 absolute angular error: 0.596422°.
+- Hypothetical transmitter/attitude/propagation error prior p95: 9.628628°.

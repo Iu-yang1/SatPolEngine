@@ -7,6 +7,31 @@ engine, with a future **minimal presentation-only bridge** to
 The final Look4Sat tracker should display **only optimal receive polarization
 angle and suggested CW/CCW direction**; research diagnostics belong here.
 
+## Real spacecraft RF profile and independent receiver validation
+
+CASSIOPE / Swarm-E has a **documented 2231.5 MHz RHCP S-band downlink**
+from patch antennas on the spacecraft's ±Z panels. We use a genuine
+2017-06-24 one-second SP3 ITRF orbit and independently downloaded real
+ITRF<-Body quaternion data, joined at precisely
+**2017-06-24T22:32:14Z** (GPS time 22:32:32).
+The receive station is a **synthetic sub-satellite reference site**, not
+a historical RF observer. The selected model patch is +Z, and its geometric
+off-boresight angle in that research geometry is about 38.48°.
+
+**A perfect circularly polarized downlink has no unique ideal linear-feed
+rotation optimum.** SatPolEngine returns angle UNKNOWN and direction UNKNOWN.
+For algorithm validation only, a virtual LINEAR body-X dipole is considered
+without claiming that it exists on the spacecraft. An independently written
+complex-IQ receiver simulator performs 256 independent noise-realization
+polarizer sweeps at 15 dB SNR. Its 95th-percentile angular error is about
+0.596°; an illustrative uncertainty-prior Monte Carlo widens the 95th
+percentile to about 9.63°. These are *simulated* errors, **not** measured
+actual downlink prediction accuracy.
+
+- [Real transmitter, orbit and independent-receiver scientific report](docs/real-transmitter-validation.md)
+- [Reproducible same-epoch real-orbit and receiver experiment](https://github.com/Iu-yang1/SatPolEngine/actions/runs/40165856890)
+- [Source document: CASSIOPE mission operations report](https://epop.phys.ucalgary.ca/wp-content/Swarm-E_Final_Operations_Report.pdf)
+
 ## Implemented
 
 - **IGRF-14** degree/order 13 geomagnetic field in Tesla/ECEF, using the

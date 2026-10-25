@@ -25,3 +25,26 @@ source provenance, receiver roll zero/sign and quantitative observational
 validation. An ideal circular downlink is not meaningfully optimized by
 rotating a linear Yagi. Computable Faraday angle alone is not a complete
 optimal polarization angle.
+
+## CASSIOPE / Swarm-E S-band telemetry downlink (verified mission facts)
+
+Actual mission Final Operations Report, section 2.1.3:
+https://epop.phys.ucalgary.ca/wp-content/Swarm-E_Final_Operations_Report.pdf
+
+- S-band downlink: **2231.5 MHz**, **RHCP**.
+- S-band patches for transmit/receive: body top **-Z** and bottom **+Z**
+  faces (panel normals). The report describes broad attitude coverage and
+  a narrow near-body-equatorial blind zone; it does not supply a measured
+  per-frequency vector antenna pattern or the active patch selection at
+  our chosen historical UTC.
+- **Actual one-second attitude**: Calgary
+  `CAS_AttQuat_20170624T000000_20170624T235959_2.0.0.cdf.zip`;
+  scalar-last body-to-ITRF, quality source 4 at study epoch.
+- **Actual one-second definitive Earth-fixed orbit**:
+  `CAS_Orbit_GEO_20170624T000000_20170624T235959_1.1.0.sp3.zip`;
+  its 2017 GPS time must be offset **18 seconds** from UTC.
+- The real transmitter is circular: rotating a linearly polarized
+  receiver yields no ideal unique polarization-mismatch optimum.
+  Neither real RF reception nor active transmitter status was measured
+  at the chosen UTC. This is a valid failure-to-recommend test, not
+  experimental proof of a real 145/435MHz target angle.
