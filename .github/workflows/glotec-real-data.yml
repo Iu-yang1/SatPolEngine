@@ -1,0 +1,27 @@
+name: NOAA GloTEC real observation inspection
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'research/observations/inspect_glotec.py'
+      - '.github/workflows/glotec-real-data.yml'
+permissions:
+  contents: read
+jobs:
+  glotec-archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install xarray netcdf4 numpy
+      - run: python research/observations/inspect_glotec.py 2026-10-20 "$RUNNER_TEMP/glotec.nc" > glotec-schema.jsonlog
+      - run: |
+          head -c 16000 glotec-schema.jsonlog
+      - uses: actions/upload-artifact@v4
+        with:
+          name: glotec-2026-10-20-schema
+          path: glotec-schema.jsonlog
