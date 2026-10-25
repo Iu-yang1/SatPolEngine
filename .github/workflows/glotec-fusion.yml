@@ -5,6 +5,7 @@ on:
     paths:
       - 'research/observations/fuse_iri_glotec.py'
       - 'research/observations/tests/test_glotec_fusion.py'
+      - 'research/observations/glotec-2026-10-20.example.json'
       - '.github/workflows/glotec-fusion.yml'
   workflow_dispatch:
 permissions:
@@ -25,7 +26,7 @@ jobs:
           python research/observations/inspect_glotec.py 2026-10-20 "$RUNNER_TEMP/glotec.nc" > /tmp/schema.log
       - name: Fuse dated PyIRI profiles with real GloTEC F2 maps
         run: |
-          python research/observations/fuse_iri_glotec.py research/iri-request.example.json "$RUNNER_TEMP/glotec.nc" fused-path.tsv | tee fusion-report.json
+          python research/observations/fuse_iri_glotec.py research/observations/glotec-2026-10-20.example.json "$RUNNER_TEMP/glotec.nc" fused-path.tsv | tee fusion-report.json
           test "$(wc -l < fused-path.tsv)" -eq 18
       - uses: actions/upload-artifact@v4
         with:

@@ -1,0 +1,16 @@
+{
+  "satellite_ecef_m": [
+    -1385286.0437811483,
+    -5169957.898407329,
+    4463658.138012299
+  ],
+  "ground_ecef_m": [
+    -1266325.9090166606,
+    -4725992.63139102,
+    4077985.572200376
+  ],
+  "time_utc": "2026-10-20T12:00:00Z",
+  "f107_sfu": 119.7,
+  "samples": 16,
+  "_metadata": "Synthetic 600 km vertical ray above 40N 105W; observed F10.7 from dated IRI APF107 source; real archived NOAA GloTEC 2026-10-20"
+}
