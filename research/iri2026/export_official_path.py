@@ -32,13 +32,18 @@ def export(request, binary, output):
     records=[]
     for lat,lon,alt_m in geos:
         alt_km=alt_m/1000
-        if not 80<=alt_km<=2000:
-            raise ValueError(f"IRI-2026 driver supported height 80..2000km, got {alt_km}")
-        records.append(f"{now.year} {now.month} {now.day} {hours:.8f} "
-                       f"{lat:.10f} {lon:.10f} {alt_km:.8f}")
+        if not -1<=alt_km<=2000:
+            raise ValueError(f"IRI-2026 ray sample outside supported model domain: {alt_km}")
+        if alt_km<80:
+            # Explicitly approximate ionospheric Ne=0 below 80km.
+            records.append(None)
+        else:
+            records.append(f"{now.year} {now.month} {now.day} {hours:.8f} "
+                           f"{lat:.10f} {lon:.10f} {alt_km:.8f}")
     # Official IRI obtains daily solar indices by reading files relative to cwd.
     exe=pathlib.Path(binary).resolve()
-    completed=subprocess.run([str(exe)],input="\n".join(records)+"\n",text=True,
+    requested=[row for row in records if row is not None]
+    completed=subprocess.run([str(exe)],input="\n".join(requested)+"\n",text=True,
         capture_output=True,cwd=exe.parent,check=True,timeout=180)
     values=[]
     for line in completed.stdout.splitlines():
@@ -52,12 +57,14 @@ def export(request, binary, output):
         if not math.isfinite(value) or value<0 or value>=1e14:
             raise RuntimeError("Invalid IRI density")
         values.append(value)
-    if len(values)!=count:
-        raise RuntimeError(f"IRI emitted {len(values)}, expected {count}; stderr={completed.stderr[-600:]}")
+    if len(values)!=len(requested):
+        raise RuntimeError(f"IRI emitted {len(values)}, expected {len(requested)}; stderr={completed.stderr[-600:]}")
+    numbered=iter(values)
+    complete_values=[0.0 if row is None else next(numbered) for row in records]
     with pathlib.Path(output).open("w",encoding="utf-8") as f:
         f.write(f"# source=IRI-2026-official-fortran;F107=-1;time={fmt}\n")
         f.write("x_m\ty_m\tz_m\tNe_m-3\n")
-        for point,value in zip(points,values):
+        for point,value in zip(points,complete_values):
             f.write("\t".join([*(f"{v:.9f}" for v in point),f"{value:.10e}"])+"\n")
     return min(values),max(values)
 
