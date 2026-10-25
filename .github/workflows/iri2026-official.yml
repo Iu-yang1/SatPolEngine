@@ -1,0 +1,41 @@
+name: Official IRI-2026 Fortran model
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/iri2026-official.yml'
+      - 'research/iri2026/**'
+permissions:
+  contents: read
+jobs:
+  official-iri:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install official-model prerequisites
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y gfortran unzip
+      - name: Retrieve, compile and test official 2026 Fortran source
+        run: |
+          bash research/iri2026/build_official.sh "$RUNNER_TEMP/iri2026"
+          printf '2026 10 20 12.0 0.0 0.0 250.0\n' | "$RUNNER_TEMP/iri2026/iri2026-density" | tee /tmp/iri_density_stdout
+          grep -E '[0-9]' /tmp/iri_density_stdout
+      - name: Export real model densities along a finite research ray
+        run: |
+          python research/iri2026/export_official_path.py research/iri-request.example.json "$RUNNER_TEMP/iri2026/iri2026-density" official-iri-samples.tsv
+          python - <<'PY'
+          from pathlib import Path
+          rows=Path('official-iri-samples.tsv').read_text().splitlines()
+          assert rows[0].startswith('# source=IRI-2026-official-fortran;')
+          assert len(rows)==18
+          vals=[float(v.split('\t')[-1]) for v in rows[2:]]
+          assert any(x>1e8 for x in vals), vals
+          print('Validated official IRI model samples:',len(vals),min(vals),max(vals))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: official-iri2026-model-samples
+          path: official-iri-samples.tsv
