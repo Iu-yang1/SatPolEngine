@@ -29,4 +29,4 @@ for lat,lon,hkm,year in CASES:
     print(f"lat={lat},lon={lon},alt={hkm}km,year={year} "
         f"error={err:.9f} nT; E/N/U expected={ref}, actual={impl}")
     assert math.isfinite(err)
-    assert err<5.0, f"IGRF-14 field mismatch beyond 5nT: {err}"
+    assert err<0.2, f"IGRF-14 field mismatch beyond 0.2nT: {err}"

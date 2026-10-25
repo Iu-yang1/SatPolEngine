@@ -44,7 +44,7 @@ if __name__=="__main__":
         dt.datetime(2024,7,1,12,0,tzinfo=dt.timezone.utc)]
     errors=[compare_one(t) for t in times]
     assert all(math.isfinite(x) for pair in errors for x in pair)
-    # Preliminary integration guard. A much stricter requirement will be
-    # appropriate before absolute-RF geometry is considered validated.
-    assert max(x[0] for x in errors)<50.0, "SGP4 port diverges > 50 km from Vallado reference"
-    assert max(x[1] for x in errors)<0.050, "SGP4 port diverges > 50 m/s from Vallado reference"
+    # Preliminary 20 m / 0.01 m/s reference guard for this single ISS orbit.
+    # Extend to multiple satellites and longer propagation before operational use.
+    assert max(x[0] for x in errors)<0.020, "SGP4 port diverges > 20 m from Vallado reference"
+    assert max(x[1] for x in errors)<0.000010, "SGP4 port diverges > 0.01 m/s from Vallado reference"

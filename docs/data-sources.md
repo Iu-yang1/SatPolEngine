@@ -91,3 +91,23 @@ output an operational POL target or CW/CCW direction.
 No current results should be automatically used to actuate the third-axis
 rotator until the sign, calibration, effective model error, and safety
 requirements have passed live RF measurements.
+
+## Independent numerical validation (October 25, 2026)
+
+The imported Look4Sat near-Earth SGP4 trajectory was cross-checked with
+Python `sgp4` 2.27 (Vallado lineage). For the three documented ISS epochs,
+TEME position differences were 2.128, 2.128 and 2.134 metres, and
+velocity differences were 0.002405, 0.002409 and 0.002397 m/s.
+Workflow: https://github.com/Iu-yang1/SatPolEngine/actions/runs/40160805395
+
+The Kotlin IGRF14 spherical-harmonic E/N/U vectors were compared to
+IAGA's independently written `ppigrf` 2.1.0. At 2025 (0°N/0°E, 0 km),
+2026 (45°N/120°E, 400 km), 2029 (60°N/105°W, 0 km) and 2020
+(30°S/72°E, 800 km), vector errors were:
+`0.000000001, 0.019296780, 0.063944882, 0.000092111 nT`.
+Workflow: https://github.com/Iu-yang1/SatPolEngine/actions/runs/40160951393
+
+These are code-to-code numerical consistency checks, not a validation of
+actual real-time ionospheric density, spacecraft antenna polarization,
+or third-axis mechanical sign. The SGP4 benchmark covers only one LEO
+TLE; a multi-orbit and deep-space accuracy suite remains necessary.
