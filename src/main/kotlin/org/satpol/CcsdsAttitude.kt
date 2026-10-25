@@ -35,7 +35,7 @@ class CcsdsAttitude private constructor(
         val axis=antennaAxisBody?:return null
         val q=quaternionAt(time)?:return null
         return AttitudeAxisEcef(q.rotate(axis).unit(),AttitudeEvidence.OBSERVED,
-            "$source; antenna mounting: ${antennaAxisProvenance ?: error(\"Missing axis evidence\")}")
+            "$source; antenna mounting: ${antennaAxisProvenance ?: error("Missing axis evidence")}")
     }
 
     fun quaternionAt(time:Instant):Quaternion? {
