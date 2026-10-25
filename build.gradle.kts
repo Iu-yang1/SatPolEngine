@@ -42,3 +42,12 @@ tasks.register<JavaExec>("observedFaraday") {
     args(project.findProperty("iriOriginal") ?: "official-profile.tsv",
          project.findProperty("iriFused") ?: "official-fused-profile.tsv")
 }
+
+tasks.register<JavaExec>("realTransmitter") {
+    group = "verification"
+    description = "Same-UTC CASSIOPE real definitive SP3 + attitude with documented RHCP downlink"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("org.satpol.orbit.RealTransmitterCli")
+    args(project.findProperty("orbitFile") ?: "cassiope-orbit.json",
+         project.findProperty("aemFile") ?: "real-cassiope.aem")
+}
