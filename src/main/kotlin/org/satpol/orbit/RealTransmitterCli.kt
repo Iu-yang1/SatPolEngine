@@ -48,6 +48,17 @@ object RealTransmitterCli {
         val link=tx.modelAt(orbit.positionM,station,q,instant,instant)
         require(link.polarizationAngleDeg==null && link.recommendedRotation==RotationDirection.UNKNOWN)
         require(link.linearReceiverMismatchDb>3.0 && link.linearReceiverMismatchDb<3.02)
+        val bodyX=q.rotate(Vector3(1.0,0.0,0.0))
+        val linear=PolarizationEngine.solveIdealDipole(
+            GroundStation(lat,lon),orbit.positionM,bodyX,
+            AttitudeEvidence.ASSUMED,
+            FaradayEstimate(0.0,0.0,"EXPLICIT VACUUM COUNTERFACTUAL / NO IONOSPHERE",1))
+        // This ideal dipole DOES NOT EXIST as the published CASSIOPE S-band
+        // transmit antenna. It is an independent algorithm verification target.
+        println(String.format(Locale.US,
+            "COUNTERFACTUAL_LINEAR,angle_deg=%.12f,evidence=SYNTHETIC_BODY_X_VACUUM,"+
+            "status=%s",
+            requireNotNull(linear.targetAngleDeg),linear.status))
         println(String.format(Locale.US,
             "REAL_CASSIOPE_JOIN,epoch=%s,selected_panel=%d,off_boresight_deg=%.9f,"+
             "lineal_receiver_mismatch_db=%.9f,position_m=%.2f,angle=UNKNOWN,CWCCW=UNKNOWN",
