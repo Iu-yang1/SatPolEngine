@@ -1,0 +1,51 @@
+name: Real CASSIOPE orbit attitude and documented RF profile
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cassiope-orbit-rf.yml'
+      - 'research/attitude/cassiope_orbit.py'
+      - 'research/attitude/cassiope_attitude.py'
+      - 'research/tests/test_cassiope_sp3.py'
+      - 'src/main/kotlin/org/satpol/RealTransmitter.kt'
+      - 'src/main/kotlin/org/satpol/orbit/RealTransmitterCli.kt'
+      - 'build.gradle.kts'
+permissions:
+  contents: read
+jobs:
+  same-epoch-rf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install cdflib numpy
+      - name: Independent GPS to UTC SP3 parser reference tests
+        run: python -m unittest discover -s research/tests -p test_cassiope_sp3.py -v
+      - name: Real 2017-06-24 spacecraft 1Hz attitude
+        run: python research/attitude/cassiope_attitude.py "$RUNNER_TEMP/CASSIOPE-20170624.zip" real-cassiope.aem real-attitude-report.json
+      - name: Real 2017-06-24 definitive ITRF 1Hz orbit (SP3 GPS time)
+        run: python research/attitude/cassiope_orbit.py "$RUNNER_TEMP/CASSIOPE-SP3.zip" cassiope-orbit.json
+      - name: Same-UTC real orbit and attitude plus official RHCP transmitter
+        run: |
+          gradle --no-daemon -q realTransmitter -PorbitFile=cassiope-orbit.json -PaemFile=real-cassiope.aem | tee joined-satellite-rf.txt
+          grep -q 'CWCCW=UNKNOWN' joined-satellite-rf.txt
+          grep -q 'angle=UNKNOWN' joined-satellite-rf.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cassiope-definitive-orbit-attitude-real-rhcp
+          path: |
+            cassiope-orbit.json
+            real-cassiope.aem
+            real-attitude-report.json
+            joined-satellite-rf.txt
