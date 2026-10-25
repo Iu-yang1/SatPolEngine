@@ -1,0 +1,63 @@
+name: Official IRI-2026 + NOAA GloTEC fusion
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/iri2026-glotec.yml'
+      - 'research/iri2026/**'
+      - 'research/observations/fuse_official_iri_glotec.py'
+      - 'research/observations/fuse_iri_glotec.py'
+      - 'research/observations/glotec-2026-10-20.example.json'
+permissions:
+  contents: read
+jobs:
+  official-observation-fusion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install data-analysis and Fortran dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y gfortran unzip
+          python -m pip install numpy xarray netcdf4
+      - name: Build actual official IRI model
+        run: bash research/iri2026/build_official.sh "$RUNNER_TEMP/iri2026"
+      - name: Evaluate IRI-2026 along historical LEO propagation ray
+        run: |
+          python research/iri2026/export_official_path.py \
+            research/observations/glotec-2026-10-20.example.json \
+            "$(cat "$RUNNER_TEMP/iri2026/executable.path")" official-profile.tsv
+          test -s official-profile.f2.json
+      - name: Fetch genuine NOAA observation model
+        run: |
+          python research/observations/inspect_glotec.py 2026-10-20 "$RUNNER_TEMP/glotec.nc" > archive-schema.json
+      - name: Fuse official physical model with matching NOAA observations
+        run: |
+          python research/observations/fuse_official_iri_glotec.py \
+            official-profile.tsv official-profile.f2.json "$RUNNER_TEMP/glotec.nc" \
+            official-fused-profile.tsv | tee official-fusion-report.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('official-fusion-report.json').read_text())
+          assert r['samples']==16
+          assert r['minimum_observation_quality']>=2
+          assert r['observation_age_minutes']<=20
+          assert not r['full_column_TEC_used_as_slant']
+          assert Path('official-fused-profile.tsv').read_text().count('\n')==18
+          print('Verified official IRI/NOAA fusion report',r)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: official-iri2026-noaa-fusion-2026-10-20
+          path: |
+            official-profile.tsv
+            official-profile.f2.json
+            official-fused-profile.tsv
+            official-fusion-report.json
+            archive-schema.json

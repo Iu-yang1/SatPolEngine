@@ -15,8 +15,6 @@ import sys
 
 import numpy as np
 import xarray as xr
-import PyIRI
-import PyIRI.main_library as iri
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from iri_export_path import ecef_to_geodetic
@@ -91,6 +89,8 @@ def fuse(request, glotec_file:Path, output:Path, min_quality=2):
         raise ValueError("Ray points outside supported LEO altitude range")
     heights=np.arange(80.,2001.,5.)
     hour=now.hour+now.minute/60+(now.second+now.microsecond/1e6)/3600
+    import PyIRI
+    import PyIRI.main_library as iri
     f2,_,_,_,_,_,edp=iri.IRI_density_1day(now.year,now.month,now.day,
         np.asarray([hour]),lon,lat,heights,f107,PyIRI.coeff_dir,1)
     edp=np.asarray(edp)
