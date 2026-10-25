@@ -33,3 +33,12 @@ tasks.register<JavaExec>("realAttitude") {
     args(project.findProperty("attitudeFile") ?: "real-cassiope.aem",
          project.findProperty("attitudeTime") ?: "2017-06-24T22:32:14Z")
 }
+
+tasks.register<JavaExec>("observedFaraday") {
+    group = "verification"
+    description = "Compare signed IGRF14 Faraday on official IRI and real NOAA-corrected paths"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("org.satpol.ObservedFaradayCli")
+    args(project.findProperty("iriOriginal") ?: "official-profile.tsv",
+         project.findProperty("iriFused") ?: "official-fused-profile.tsv")
+}

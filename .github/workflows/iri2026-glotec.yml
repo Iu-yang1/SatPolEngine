@@ -9,6 +9,8 @@ on:
       - 'research/observations/fuse_official_iri_glotec.py'
       - 'research/observations/fuse_iri_glotec.py'
       - 'research/observations/glotec-2026-10-20.example.json'
+      - 'src/main/kotlin/org/satpol/ObservedFaradayCli.kt'
+      - 'build.gradle.kts'
 permissions:
   contents: read
 jobs:
@@ -17,6 +19,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14'
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -53,6 +62,31 @@ jobs:
           assert Path('official-fused-profile.tsv').read_text().count('\n')==18
           print('Verified official IRI/NOAA fusion report',r)
           PY
+      - name: Calculate frequency-dependent Faraday rotation using IGRF-14
+        run: |
+          gradle --no-daemon -q observedFaraday -PiriOriginal=official-profile.tsv -PiriFused=official-fused-profile.tsv | tee observed-faraday.txt
+          python - <<'PY'
+          from pathlib import Path
+          import math
+          rows=[]
+          for line in Path('observed-faraday.txt').read_text().splitlines():
+              if line.startswith('FARADAY_DATA,'):
+                  rows.append(dict(x.split('=',1) for x in line.split(',')[1:]))
+          assert len(rows)==2, 'Expected 145/435 MHz integrals'
+          a,b=rows
+          assert float(a['frequency_mhz'])==145 and float(b['frequency_mhz'])==435
+          for prefix in ('iri','fused'):
+              lo=float(a[prefix+'_angle_deg'])
+              hi=float(b[prefix+'_angle_deg'])
+              assert math.isfinite(lo) and math.isfinite(hi) and abs(hi)>1e-8
+              assert abs(lo/hi-9.0)<1e-6, (prefix,lo,hi)
+              stec_a=float(a[prefix+'_stec_tecu'])
+              stec_b=float(b[prefix+'_stec_tecu'])
+              assert abs(stec_a-stec_b)<1e-8 and stec_a>0
+          assert a['epoch']==b['epoch']=='2026-10-20T12:00:00Z'
+          assert abs(float(a['fused_angle_deg'])-float(a['iri_angle_deg']))>1e-8
+          print('Official IRI vs real GloTEC corrected IGRF14 Faraday: PASS')
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: official-iri2026-noaa-fusion-2026-10-20
@@ -62,3 +96,4 @@ jobs:
             official-fused-profile.tsv
             official-fusion-report.json
             archive-schema.json
+            observed-faraday.txt
