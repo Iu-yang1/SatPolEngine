@@ -48,7 +48,7 @@ def export(archive:Path,out_aem:Path,out_report:Path):
                 ts=_cdf_epoch_to_utc(cdf.varget("Timestamp"))
                 sources_a=np.asarray(cdf.varget("Data_Source_Previous"),dtype=int)
                 sources_b=np.asarray(cdf.varget("Data_Source_Next"),dtype=int)
-            finally: cdf.close()
+            finally: del cdf
     if len(q)!=len(ts) or q.shape[-1]!=4:
         raise ValueError("Invalid official CASSIOPE 1Hz attitude shape")
     if len(q)!=len(sources_a) or len(q)!=len(sources_b):
