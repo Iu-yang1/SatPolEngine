@@ -51,6 +51,10 @@ if [[ -z "$MODEL_SUBDIR" ]]; then echo "Model archive missing irisub.for" >&2; e
 MODEL_SUBDIR="$(dirname "$MODEL_SUBDIR")"
 cp "$OUTPUT/apf107.dat" "$MODEL_SUBDIR/apf107.dat"
 cp "$OUTPUT/ig_rz.dat" "$MODEL_SUBDIR/ig_rz.dat"
+# Original IRI routines may reference uppercase names; Linux FS is case-sensitive.
+# Preserve exact official data bytes and add aliases rather than rewriting indices.
+cp "$OUTPUT/ig_rz.dat" "$MODEL_SUBDIR/IG_RZ.DAT"
+cp "$OUTPUT/apf107.dat" "$MODEL_SUBDIR/APF107.DAT"
 cd "$MODEL_SUBDIR"
 # Compile from the original extracted model directory, including data files.
 gfortran -O2 -std=legacy -ffixed-line-length-none -fallow-argument-mismatch -o iri2026-density \
