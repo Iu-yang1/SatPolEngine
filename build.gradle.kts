@@ -17,3 +17,10 @@ tasks.register<JavaExec>("orbitVector") {
     classpath = sourceSets["main"].runtimeClasspath
     mainClass.set("org.satpol.orbit.OrbitReferenceCli")
 }
+
+tasks.register<JavaExec>("igrfVector") {
+    group = "verification"
+    description = "Emit IGRF-14 ENU field for external IAGA ppigrf cross-validation"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("org.satpol.IgrfReferenceCli")
+}
