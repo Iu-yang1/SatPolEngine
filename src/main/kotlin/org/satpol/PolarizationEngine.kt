@@ -35,7 +35,8 @@ object PolarizationEngine {
         attitudeEvidence: AttitudeEvidence,
         faraday: FaradayEstimate?,
         currentMechanicalRollDeg: Double? = null,
-        mechanicalLimits: RollLimits? = null
+        mechanicalLimits: RollLimits? = null,
+        rollCalibration: RollCalibration? = null
     ): PolarizationSolution {
         val basis = LookBasis.from(station, satelliteEcefM)
             ?: return unavailable(PredictionStatus.ZENITH_SINGULARITY,attitudeEvidence,faraday)
@@ -52,7 +53,7 @@ object PolarizationEngine {
             Complex64(transverse.dot(basis.elevationAxis)),
             Complex64(transverse.dot(basis.azimuthAxis))
         )
-        return solveJones(emitted,attitudeEvidence,faraday,currentMechanicalRollDeg,mechanicalLimits)
+        return solveJones(emitted,attitudeEvidence,faraday,currentMechanicalRollDeg,mechanicalLimits,rollCalibration)
     }
 
     /**
@@ -76,14 +77,18 @@ object PolarizationEngine {
         val received = emitted.rotated(faraday.angleRad)
         val axis = received.majorAxisDeg()
             ?: return unavailable(PredictionStatus.AXIS_UNDEFINED,attitudeEvidence,faraday,geometricAngle)
-        val instruction = RollRecommendation.calculate(axis,currentMechanicalRollDeg,mechanicalLimits)
+        val instruction=if(rollCalibration!=null) {
+            val motorTarget=rollCalibration.motorTargetFromSkyAxis(axis)
+            val raw=RollRecommendation.calculate(motorTarget,currentMechanicalRollDeg,mechanicalLimits)
+            raw.copy(direction=rollCalibration.physicalDirection(raw.deltaDeg))
+        } else RollRecommendation(null,null,RotationDirection.UNKNOWN)
         val status = when {
-            currentMechanicalRollDeg == null -> PredictionStatus.ANGLE_ONLY
+            currentMechanicalRollDeg == null || rollCalibration == null -> PredictionStatus.ANGLE_ONLY
             instruction.commandDeg == null -> PredictionStatus.MECHANICALLY_UNREACHABLE
             else -> PredictionStatus.VALID
         }
-        val lossDb = currentMechanicalRollDeg?.takeIf { it.isFinite() }?.let {
-            val plf = received.linearMatch(it)
+        val lossDb = if(rollCalibration==null) null else currentMechanicalRollDeg?.takeIf { it.isFinite() }?.let {
+            val plf = received.linearMatch(rollCalibration.skyAxisAtMotorRoll(it))
             if (plf <= 0.0) Double.POSITIVE_INFINITY else -10.0 * log10(plf)
         }
         return PolarizationSolution(axis,instruction.direction,instruction.commandDeg,

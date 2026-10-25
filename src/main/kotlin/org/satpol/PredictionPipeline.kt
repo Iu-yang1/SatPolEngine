@@ -22,6 +22,7 @@ object PredictionPipeline {
         val propagationSource:String?,
         val currentPolRollDeg:Double?=null,
         val limits:RollLimits?=null,
+        val rollCalibration:RollCalibration?=null,
         val samples:Int=256
     )
 
@@ -36,7 +37,8 @@ object PredictionPipeline {
                 attitudeEvidence=AttitudeEvidence.UNKNOWN,
                 faraday=null,
                 currentMechanicalRollDeg=x.currentPolRollDeg,
-                mechanicalLimits=x.limits
+                mechanicalLimits=x.limits,
+                rollCalibration=x.rollCalibration
             )
         }
         val magnetic=x.magneticModel
@@ -51,7 +53,8 @@ object PredictionPipeline {
             station=x.station, satelliteEcefM=x.spacecraft.positionM,
             dipoleAxisEcef=axis.directionEcef, attitudeEvidence=axis.evidence,
             faraday=faraday, currentMechanicalRollDeg=x.currentPolRollDeg,
-            mechanicalLimits=x.limits
+            mechanicalLimits=x.limits,
+            rollCalibration=x.rollCalibration
         )
     }
 }

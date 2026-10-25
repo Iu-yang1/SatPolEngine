@@ -75,7 +75,8 @@ class ScientificCoreTest {
         val basis=assertNotNull(LookBasis.from(ground,satellite))
         val model=FaradayEstimate(Math.toRadians(30.0),0.0,"synthetic",1)
         val result=PolarizationEngine.solveIdealDipole(
-            ground,satellite,basis.elevationAxis,AttitudeEvidence.OBSERVED,model,0.0)
+            ground,satellite,basis.elevationAxis,AttitudeEvidence.OBSERVED,model,0.0,
+            rollCalibration=RollCalibration(0.0,true,"test fixture calibration"))
         assertEquals(PredictionStatus.VALID,result.status)
         assertEquals(30.0,assertNotNull(result.targetAngleDeg),1e-9)
         assertEquals(RotationDirection.CLOCKWISE,result.recommendedRotation)
@@ -112,7 +113,8 @@ class ScientificCoreTest {
         assertEquals(PredictionStatus.AXIS_UNDEFINED,
             PolarizationEngine.solveJones(cp,AttitudeEvidence.OBSERVED,vacuum()).status)
         val out=PolarizationEngine.solveJones(Jones.linear(50.0),
-            AttitudeEvidence.OBSERVED,vacuum(),0.0,RollLimits(-10.0,10.0))
+            AttitudeEvidence.OBSERVED,vacuum(),0.0,RollLimits(-10.0,10.0),
+            rollCalibration=RollCalibration(0.0,true,"test fixture calibration"))
         assertEquals(PredictionStatus.MECHANICALLY_UNREACHABLE,out.status)
         assertEquals(RotationDirection.UNKNOWN,out.recommendedRotation)
     }

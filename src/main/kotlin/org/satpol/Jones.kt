@@ -66,6 +66,37 @@ object LinearAngles {
     fun shortestDeltaDeg(target: Double, current: Double): Double = wrapDeg(target-current)
 }
 
+/**
+ * Explicit receiver mechanical POL calibration. Both sign and zero must be
+ * measured as seen by an operator at the station LOOKING TOWARD the satellite.
+ * Sky axis0=elevation-up, axis1=azimuth-right, positive sky angle is CW.
+ * A motor encoder angle is not interchangeable with a sky polarization angle.
+ */
+data class RollCalibration(
+    val skyAxisAtMotorZeroDeg: Double,
+    val positiveMotorRollIsClockwise: Boolean,
+    val calibrationSource: String
+) {
+    init {
+        require(skyAxisAtMotorZeroDeg.isFinite())
+        require(calibrationSource.isNotBlank())
+    }
+    private val sign: Double get() = if (positiveMotorRollIsClockwise) 1.0 else -1.0
+    fun skyAxisAtMotorRoll(motorDeg: Double): Double =
+        LinearAngles.wrapDeg(skyAxisAtMotorZeroDeg + sign * motorDeg)
+    fun motorTargetFromSkyAxis(targetAxisDeg: Double): Double =
+        sign * LinearAngles.wrapDeg(targetAxisDeg - skyAxisAtMotorZeroDeg)
+    fun physicalDirection(motorDeltaDeg: Double?): RotationDirection {
+        if (motorDeltaDeg==null||!motorDeltaDeg.isFinite()) return RotationDirection.UNKNOWN
+        val skyDelta=sign * motorDeltaDeg
+        return when {
+            abs(skyDelta)<=0.05 -> RotationDirection.HOLD
+            skyDelta>0 -> RotationDirection.CLOCKWISE
+            else -> RotationDirection.COUNTERCLOCKWISE
+        }
+    }
+}
+
 enum class RotationDirection { CLOCKWISE, COUNTERCLOCKWISE, HOLD, UNKNOWN }
 
 /** In an arbitrary calibrated mechanical roll coordinate, inclusive physical limits. */

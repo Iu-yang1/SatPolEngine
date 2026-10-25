@@ -37,7 +37,7 @@ class PredictionPipelineTest {
             currentPolRollDeg=0.0,samples=32
         )
         val predicted=PredictionPipeline.solve(x)
-        assertEquals(PredictionStatus.VALID,predicted.status)
+        assertEquals(PredictionStatus.ANGLE_ONLY,predicted.status)
         assertEquals(AttitudeEvidence.ASSUMED,predicted.attitudeEvidence)
         assertTrue(assertNotNull(predicted.targetAngleDeg).isFinite())
         assertTrue(assertNotNull(predicted.faradayAngleDeg).isFinite())
