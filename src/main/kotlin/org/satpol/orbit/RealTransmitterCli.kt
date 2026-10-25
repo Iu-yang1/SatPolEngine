@@ -22,9 +22,12 @@ object RealTransmitterCli {
         valueLine(s,key).removeSurrounding("\"")
 
     fun vec(s:String,key:String):Vector3 {
-        val row=valueLine(s,key)
-        require(row.startsWith("[") && row.endsWith("]"))
-        val values=row.substring(1,row.length-1).split(',')
+        val tail=s.substringAfter("\"$key\"",missingDelimiterValue="")
+        require(tail.isNotEmpty()) { "Missing '$key' coordinate vector" }
+        val opening=tail.indexOf('[')
+        val closing=tail.indexOf(']',opening+1)
+        require(opening>=0 && closing>opening) { "Invalid JSON array for $key" }
+        val values=tail.substring(opening+1,closing).split(',')
             .map(String::trim).map(String::toDouble)
         require(values.size==3)
         return Vector3(values[0],values[1],values[2])
