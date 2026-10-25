@@ -46,26 +46,52 @@ def export(request, binary, output):
     completed=subprocess.run([str(exe)],input="\n".join(requested)+"\n",text=True,
         capture_output=True,cwd=exe.parent,check=True,timeout=180)
     values=[]
+    model_f2=[]
     for line in completed.stdout.splitlines():
         line=line.strip()
         if "Error while reading" in line or line.startswith("ERROR:"):
             raise RuntimeError("Official IRI reported invalid model coefficients: "+line)
         if not line.startswith("SATPOL_NE="): continue
-        try: value=float(line.split("=",1)[1].replace("D","E"))
-        except ValueError:
-            raise RuntimeError("Unexpected official IRI density field: "+line[:200])
-        if not math.isfinite(value) or value<0 or value>=1e14:
-            raise RuntimeError("Invalid IRI density")
+        try:
+            props=dict(token.split("=",1) for token in line.split(";"))
+            value=float(props["SATPOL_NE"].replace("D","E"))
+            nmf2=float(props["NMF2"].replace("D","E"))
+            hmf2=float(props["HMF2"].replace("D","E"))
+            f107=float(props["F107"].replace("D","E"))
+        except (ValueError,KeyError):
+            raise RuntimeError("Unexpected official IRI density/F2/F107 fields: "+line[:200])
+        if not all(math.isfinite(z) for z in (value,nmf2,hmf2,f107)):
+            raise RuntimeError("Non-finite IRI 2026 numerical parameter")
+        if not (0<=value<1e14 and 1e9<nmf2<1e14 and 120<hmf2<750 and 40<f107<400):
+            raise RuntimeError(f"Out-of-range official IRI model result: {line[:200]}")
         values.append(value)
+        model_f2.append((nmf2,hmf2,f107))
     if len(values)!=len(requested):
         raise RuntimeError(f"IRI emitted {len(values)}, expected {len(requested)}; stderr={completed.stderr[-600:]}")
     numbered=iter(values)
     complete_values=[0.0 if row is None else next(numbered) for row in records]
+    params_iter=iter(model_f2)
+    all_params=[None if row is None else next(params_iter) for row in records]
+    f107_samples=[p[2] for p in model_f2]
+    if max(f107_samples)-min(f107_samples)>2.0:
+        raise RuntimeError("IRI F10.7 changed unexpectedly within same UTC day")
+    f107_d=f107_samples[0]
     with pathlib.Path(output).open("w",encoding="utf-8") as f:
         f.write(f"# source=IRI-2026-official-fortran;F107=-1;time={fmt}\n")
         f.write("x_m\ty_m\tz_m\tNe_m-3\n")
         for point,value in zip(points,complete_values):
             f.write("\t".join([*(f"{v:.9f}" for v in point),f"{value:.10e}"])+"\n")
+    # Traceable model peak state, needed for assimilating real F2 observations.
+    metadata={
+        "source":"official IRI-2026 Fortran, urSI F2 peak, original daily indices",
+        "time_utc":fmt,
+        "f107_sfu":f107_d,
+        "samples":[None if p is None else
+            {"nmf2_m3":p[0],"hmf2_km":p[1],"f107_sfu":p[2]}
+            for p in all_params]
+    }
+    pathlib.Path(output).with_suffix(".f2.json").write_text(
+        json.dumps(metadata,indent=2),encoding="utf-8")
     return min(values),max(values)
 
 if __name__=="__main__":
