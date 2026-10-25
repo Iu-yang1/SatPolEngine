@@ -1,0 +1,10 @@
+.gradle/
+build/
+out/
+.idea/
+*.iml
+local.properties
+__pycache__/
+.pytest_cache/
+*.pyc
+*.tmp
