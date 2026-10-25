@@ -6,9 +6,42 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 OUTPUT="${1:-$PWD/iri2026_work}"
 mkdir -p "$OUTPUT"
 cd "$OUTPUT"
-curl --fail --location --retry 3 --max-time 90 -o iri.zip 'https://irimodel.org/IRI-2026/00_iri.zip'
-curl --fail --location --retry 3 --max-time 90 -o apf107.dat 'https://chain-new.chain-project.net/echaim_downloads/apf107.dat'
-curl --fail --location --retry 3 --max-time 90 -o ig_rz.dat 'https://chain-new.chain-project.net/echaim_downloads/ig_rz.dat'
+# irimodel.org sometimes denies automated GitHub-hosted curl requests (HTTP 406).
+# Honor externally supplied official archives; otherwise try only official URLs.
+if [[ -n "${SATPOL_IRI_ARCHIVE:-}" ]]; then
+  cp "$SATPOL_IRI_ARCHIVE" iri.zip
+else
+  USER_AGENT='Mozilla/5.0 (compatible; SatPolEngine-research/0.2; +https://github.com/Iu-yang1/SatPolEngine)'
+  downloaded=0
+  for url in \
+    'https://irimodel.org/IRI-2026/00_iri.zip' \
+    'https://www.irimodel.org/IRI-2026/00_iri.zip' \
+    'https://irimodel.org/IRI-2026/00_iri.zip?download=1'; do
+    if curl -fsSL --max-time 60 --retry 2 -A "$USER_AGENT" \
+        -e 'https://irimodel.org/IRI-2026/' \
+        -H 'Accept: application/zip,application/octet-stream,*/*' \
+        -o iri.zip "$url" && unzip -tq iri.zip >/dev/null 2>&1; then
+      downloaded=1; break
+    fi
+  done
+  if [[ "$downloaded" != 1 ]]; then
+    echo 'Cannot fetch official IRI-2026 ZIP from GitHub runner.' >&2
+    echo 'Download https://irimodel.org/IRI-2026/00_iri.zip and set SATPOL_IRI_ARCHIVE to its local path.' >&2
+    exit 86
+  fi
+fi
+if [[ -n "${SATPOL_IRI_APF107:-}" ]]; then
+  cp "$SATPOL_IRI_APF107" apf107.dat
+else
+  curl -fsSL --retry 2 -o apf107.dat 'https://chain-new.chain-project.net/echaim_downloads/apf107.dat'
+fi
+if [[ -n "${SATPOL_IRI_IG_RZ:-}" ]]; then
+  cp "$SATPOL_IRI_IG_RZ" ig_rz.dat
+else
+  curl -fsSL --retry 2 -o ig_rz.dat 'https://chain-new.chain-project.net/echaim_downloads/ig_rz.dat'
+fi
+unzip -tq iri.zip >/dev/null
+sha256sum iri.zip apf107.dat ig_rz.dat
 test "$(stat -c %s iri.zip)" -gt 1000000
 test "$(stat -c %s apf107.dat)" -gt 100000
 test "$(stat -c %s ig_rz.dat)" -gt 500
