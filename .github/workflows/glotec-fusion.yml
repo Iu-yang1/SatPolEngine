@@ -1,0 +1,35 @@
+name: Real NOAA GloTEC F2 correction
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'research/observations/fuse_iri_glotec.py'
+      - 'research/tests/test_glotec_fusion.py'
+      - '.github/workflows/glotec-fusion.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  obs-fusion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install numpy xarray netcdf4 PyIRI
+      - run: python -m unittest discover -s research/tests -v
+      - name: Read actual NOAA October 20 2026 model archive
+        run: |
+          python research/observations/inspect_glotec.py 2026-10-20 "$RUNNER_TEMP/glotec.nc" > /tmp/schema.log
+      - name: Fuse dated PyIRI profiles with real GloTEC F2 maps
+        run: |
+          python research/observations/fuse_iri_glotec.py research/iri-request.example.json "$RUNNER_TEMP/glotec.nc" fused-path.tsv | tee fusion-report.json
+          test "$(wc -l < fused-path.tsv)" -eq 18
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dated-noaa-f2-corrected-profiles
+          path: |
+            fusion-report.json
+            fused-path.tsv
