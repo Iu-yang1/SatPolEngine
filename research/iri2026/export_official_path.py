@@ -77,7 +77,7 @@ def export(request, binary, output):
         raise RuntimeError("IRI F10.7 changed unexpectedly within same UTC day")
     f107_d=f107_samples[0]
     with pathlib.Path(output).open("w",encoding="utf-8") as f:
-        f.write(f"# source=IRI-2026-official-fortran;F107=-1;time={fmt}\n")
+        f.write(f"# source=IRI-2026-official-fortran;F107={f107_d:.5f};time={fmt}\n")
         f.write("x_m\ty_m\tz_m\tNe_m-3\n")
         for point,value in zip(points,complete_values):
             f.write("\t".join([*(f"{v:.9f}" for v in point),f"{value:.10e}"])+"\n")
