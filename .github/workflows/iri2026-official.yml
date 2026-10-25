@@ -21,6 +21,14 @@ jobs:
       - name: Retrieve, compile and test official 2026 Fortran source
         run: |
           bash research/iri2026/build_official.sh "$RUNNER_TEMP/iri2026"
+          MODEL_DIR="$(dirname "$(cat "$RUNNER_TEMP/iri2026/executable.path")")"
+          echo 'IRI-2026 coefficient file header and size:'
+          ls -lh "$MODEL_DIR"/igrf2025.dat
+          head -n 8 "$MODEL_DIR"/igrf2025.dat
+          echo 'Official iritest recommended JF switch defaults:'
+          grep -niE 'jf\(|JF\(' "$MODEL_DIR"/iritest.for | head -55 || true
+          echo 'IGRF error branch source:'
+          grep -ni -B 12 -A 8 'Error while reading' "$MODEL_DIR"/igrf.for | head -130 || true
           printf '2026 10 20 12.0 0.0 0.0 250.0\n' | "$(cat "$RUNNER_TEMP/iri2026/executable.path")" | tee /tmp/iri_density_stdout
           grep -E '^SATPOL_NE=' /tmp/iri_density_stdout
           echo 'IGRF-2025 coefficient file:'
