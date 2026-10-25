@@ -24,7 +24,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y gfortran unzip
-          python -m pip install numpy xarray netcdf4
+          python -m pip install numpy scipy xarray netcdf4
       - name: Build actual official IRI model
         run: bash research/iri2026/build_official.sh "$RUNNER_TEMP/iri2026"
       - name: Evaluate IRI-2026 along historical LEO propagation ray
@@ -38,6 +38,7 @@ jobs:
           python research/observations/inspect_glotec.py 2026-10-20 "$RUNNER_TEMP/glotec.nc" > archive-schema.json
       - name: Fuse official physical model with matching NOAA observations
         run: |
+          set -o pipefail
           python research/observations/fuse_official_iri_glotec.py \
             official-profile.tsv official-profile.f2.json "$RUNNER_TEMP/glotec.nc" \
             official-fused-profile.tsv | tee official-fusion-report.json
