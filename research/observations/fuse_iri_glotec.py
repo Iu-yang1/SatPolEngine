@@ -87,8 +87,8 @@ def fuse(request, glotec_file:Path, output:Path, min_quality=2):
     points=np.asarray([sat+(ground-sat)*((i+0.5)/count) for i in range(count)])
     geos=np.asarray([ecef_to_geodetic(*p) for p in points])
     lat,lon,alt=geos[:,0],geos[:,1],geos[:,2]/1000.
-    if not np.all((alt>=80)&(alt<=2000)):
-        raise ValueError("Ray points outside supported PyIRI altitudes")
+    if not np.all((alt>=-1)&(alt<=2000)):
+        raise ValueError("Ray points outside supported LEO altitude range")
     heights=np.arange(80.,2001.,5.)
     hour=now.hour+now.minute/60+(now.second+now.microsecond/1e6)/3600
     f2,_,_,_,_,_,edp=iri.IRI_density_1day(now.year,now.month,now.day,
