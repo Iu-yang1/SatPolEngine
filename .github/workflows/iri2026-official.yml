@@ -29,7 +29,7 @@ jobs:
           grep -niE 'jf\(|JF\(' "$MODEL_DIR"/iritest.for | head -55 || true
           echo 'IGRF error branch source:'
           grep -ni -B 14 -A 12 'Error while reading' "$MODEL_DIR"/*.for | head -160 || true
-          printf '2026 10 20 12.0 0.0 0.0 250.0\n' | "$(cat "$RUNNER_TEMP/iri2026/executable.path")" | tee /tmp/iri_density_stdout
+          (cd "$MODEL_DIR" && printf '2026 10 20 12.0 0.0 0.0 250.0\n' | ./iri2026-density) | tee /tmp/iri_density_stdout
           grep -E '^SATPOL_NE=' /tmp/iri_density_stdout
           echo 'IGRF-2025 coefficient file:'
           file "$(dirname "$(cat "$RUNNER_TEMP/iri2026/executable.path")")/igrf2025.dat"
